@@ -3,23 +3,23 @@
 {% load blog_tags %}
 {% block main %}
    <main class="col-md-8">
-                {% for article in article_list %}
+                {% for article in articles.object_list %}
                 <article class="post post-1">
                     <header class="entry-header">
                         <h1 class="entry-title">
                             <a href="{% url 'blog:detail' article.id %}">{{ article.title }}</a>
                         </h1>
                         <div class="entry-meta">
-                            <span class="post-category"><a href="#">{{ article.category.name }}</a></span>
-                            <span class="post-date"><a href="#"><time class="entry-date"
-                                                                      datetime="{{ article.created_time}}">{{ article.created_time}}</time></a></span>
-                            <span class="post-author"><a href="#">{{ article.author }}</a></span>
-                            <span class="comments-link"><a href="#">4 评论</a></span>
-                            <span class="views-count"><a href="#">588 阅读</a></span>
+                            <span class="post-category">{{ article.category.name }}</span>
+                            <span class="post-date"><time class="entry-date"
+                                                                      datetime="{{ article.created_time}}">{{ article.created_time}}</time></span>
+                            <span class="post-author">{{ article.get_name }}</span>
+                            <span class="comments-link">{{ article.get_comment_num }} 评论</span>
+                            <span class="views-count">{{ article.views }} 阅读</span>
                         </div>
                     </header>
                     <div class="entry-content clearfix">
-                        <p>{{ article.excerpt }}</p>
+                        <p>{{ article.excerpt|truncatechars:54 }}...</p>
                         <div class="read-more cl-effect-14">
                             <a href="{% url 'blog:detail' article.id %}" class="more-link">继续阅读 <span class="meta-nav">→</span></a>
                         </div>
@@ -29,24 +29,25 @@
                   <div class="no-post">暂时还没有发布的文章！</div>
                 {% endfor %}
 
-                <!-- 简单分页效果
-                <div class="pagination-simple">
-                    <a href="#">上一页</a>
-                    <span class="current">第 6 页 / 共 11 页</span>
-                    <a href="#">下一页</a>
-                </div>
-                -->
                 <div class="pagination">
                     <ul>
-                        <li><a href="">1</a></li>
-                        <li><a href="">...</a></li>
-                        <li><a href="">4</a></li>
-                        <li><a href="">5</a></li>
-                        <li class="current"><a href="">6</a></li>
-                        <li><a href="">7</a></li>
-                        <li><a href="">8</a></li>
-                        <li><a href="">...</a></li>
-                        <li><a href="">11</a></li>
+                        {% if articles.has_previous %}
+                 <li><a href="?{{ articles.previous_page_number.querystring }}" >上一页</a></li>
+                             {% endif %}
+                          {% for page in articles.pages %}
+                        {% if page %}
+                            {% ifequal page articles.number %}
+                                   <li class="current"><a href="?{{ page.querystring }}">{{ page }}</a></li>
+                            {% else %}
+                    <li><a href="?{{ page.querystring }}">{{ page }}</a></li>
+                            {% endifequal %}
+                        {% else %}
+                            <li><a href="">...</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if articles.has_next %}
+                    <li><a href="?{{ articles.next_page_number.querystring }}">下一页</a></li>
+                    {% endif %}
                     </ul>
                 </div>
             </main>
@@ -86,7 +87,7 @@
                     <ul>
                     {% for category in category_list %}
                         <li>
-                          <a href="{% url 'blog:category' category.id %}">{{ category.name }} <span class="post-count">(13)</span></a>
+                          <a href="{% url 'blog:category' category.id %}">{{ category.name }} <span class="post-count">{{ category.get_articles_num }}</span></a>
                         </li>
                     {% empty %}
                         暂无分类！
@@ -96,41 +97,17 @@
 
                 <div class="widget widget-tag-cloud">
                     <h3 class="widget-title">标签云</h3>
+                    {% get_tags as tag_list %}
                     <ul>
+                        {% for tag in tag_list %}
                         <li>
-                            <a href="#">Django</a>
+                            <a href="{% url 'blog:tag' tag.id %}">{{ tag.name }}</a>
                         </li>
-                        <li>
-                            <a href="#">Python</a>
-                        </li>
-                        <li>
-                            <a href="#">Java</a>
-                        </li>
-                        <li>
-                            <a href="#">笔记</a>
-                        </li>
-                        <li>
-                            <a href="#">文档</a>
-                        </li>
-                        <li>
-                            <a href="#">AngularJS</a>
-                        </li>
-                        <li>
-                            <a href="#">CSS</a>
-                        </li>
-                        <li>
-                            <a href="#">JavaScript</a>
-                        </li>
-                        <li>
-                            <a href="#">Snippet</a>
-                        </li>
-                        <li>
-                            <a href="#">jQuery</a>
-                        </li>
+                            {% empty %}
+                            暂无标签！
+                        {% endfor %}
                     </ul>
                 </div>
-                <div class="rss">
-                    <a href=""><span class="ion-social-rss-outline"></span> RSS 订阅</a>
-                </div>
+
             </aside>
 {% endblock %}

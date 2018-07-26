@@ -16,22 +16,31 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include,re_path
 from django.conf.urls import url,include
-from myblog.settings import MEDIA_ROOT
+from myblog.settings import MEDIA_ROOT,STATIC_ROOT
 from django.views.static import serve
 from blog.views import IndexView
-import xadmin
-xadmin.autodiscover()
+from django.conf.urls import handler404,handler500
 
-from xadmin.plugins import xversion
-xversion.register_models()
+
+import xadmin
+
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
     url(r'^$', IndexView.as_view(),name='index'),
     url(r'^blog/', include('blog.urls' ,namespace="blog")),
     url(r'^comment/', include('comments.urls' ,namespace="comments")),
+
     #富文本
     url(r'^ueditor/', include('DjangoUeditor.urls')),
     #s上传文件目录
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
+    url(r'^static/(?P<path>.*)$', serve, {"document_root": STATIC_ROOT}),
+
 ]
+
+#全局404页面配置
+handler404 = 'blog.views.page_not_found'
+
+#全局500页面配置
+handler500 = 'blog.views.page_error'

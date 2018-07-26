@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
+{% load blog_tags %}
 {% block main %}
     <main class="col-md-8">
                 <article class="post post-{{ article.id }}">
@@ -9,9 +10,9 @@
                             <span class="post-category"><a href="#">{{ article.category.name }}</a></span>
                             <span class="post-date"><a href="#"><time class="entry-date"
                                                                       datetime="{{ article.created_time }}">{{ article.created_time }}</time></a></span>
-                            <span class="post-author"><a href="#">{{ article.author }}</a></span>
-                            <span class="comments-link"><a href="#">4 评论</a></span>
-                            <span class="views-count"><a href="#">588 阅读</a></span>
+                            <span class="post-author"><a href="#">{{ article.get_name }}</a></span>
+                            <span class="comments-link"><a href="#">{{ article.get_comment_num }} 评论</a></span>
+                            <span class="views-count"><a href="#">{{ article.views }} 阅读</a></span>
                         </div>
                     </header>
                     <div class="entry-content clearfix">
@@ -72,106 +73,71 @@
     <aside class="col-md-4">
                 <div class="widget widget-content">
                     <h3 class="widget-title">文章目录</h3>
-                    <ul>
-                        <li>
-                            <a href="#">教程特点</a>
-                        </li>
-                        <li>
-                            <a href="#">谁适合这个教程</a>
-                        </li>
-                        <li>
-                            <a href="#">在线预览</a>
-                        </li>
-                        <li>
-                            <a href="#">资源列表</a>
-                        </li>
-                        <li>
-                            <a href="#">获取帮助</a>
-                        </li>
+                    <ul class="menu">
+
                     </ul>
                 </div>
                 <div class="widget widget-recent-posts">
                     <h3 class="widget-title">最新文章</h3>
+                    {% get_recent_articles as recent_post_list %}
                     <ul>
+                        {% for article in recent_post_list %}
                         <li>
-                            <a href="#">Django 博客开发入门教程：前言</a>
+                            <a href="{% url 'blog:detail' article.id %}">{{ article.title }}</a>
                         </li>
-                        <li>
-                            <a href="#">Django 博客使用 Markdown 自动生成文章目录</a>
-                        </li>
-                        <li>
-                            <a href="#">部署 Django 博客</a>
-                        </li>
+                        {% empty %}
+                        暂无文章！
+                        {% endfor %}
                     </ul>
                 </div>
                 <div class="widget widget-archives">
                     <h3 class="widget-title">归档</h3>
+                    {% archives as date_list %}
                     <ul>
+                        {% for date in date_list %}
                         <li>
-                            <a href="#">2017 年 5 月</a>
+                          <a href="{% url 'blog:archives' date.year date.month %}">{{ date.year }} 年 {{ date.month }} 月</a>
                         </li>
-                        <li>
-                            <a href="#">2017 年 4 月</a>
-                        </li>
-                        <li>
-                            <a href="#">2017 年 3 月</a>
-                        </li>
+                        {% empty %}
+                        暂无归档！
+                        {% endfor %}
                     </ul>
                 </div>
 
                 <div class="widget widget-category">
                     <h3 class="widget-title">分类</h3>
                     <ul>
+                        {% for category in categorys %}
                         <li>
-                            <a href="#">Django 博客教程 <span class="post-count">(13)</span></a>
+                            <a href="{% url 'blog:category' category.id %}">{{ category.name }}<span class="post-count">{{ category.get_articles_num }}</span></a>
                         </li>
-                        <li>
-                            <a href="#">Python 教程 <span class="post-count">(11)</span></a>
-                        </li>
-                        <li>
-                            <a href="#">Django 用户认证 <span class="post-count">(8)</span></a>
-                        </li>
+                        {% endfor %}
                     </ul>
                 </div>
 
                 <div class="widget widget-tag-cloud">
                     <h3 class="widget-title">标签云</h3>
                     <ul>
+                        {% for tag in article.tags.all %}
                         <li>
-                            <a href="#">Django</a>
+                            <a href="{% url 'blog:tag' tag.id %}">{{ tag.name }}</a>
                         </li>
-                        <li>
-                            <a href="#">Python</a>
-                        </li>
-                        <li>
-                            <a href="#">Java</a>
-                        </li>
-                        <li>
-                            <a href="#">笔记</a>
-                        </li>
-                        <li>
-                            <a href="#">文档</a>
-                        </li>
-                        <li>
-                            <a href="#">AngularJS</a>
-                        </li>
-                        <li>
-                            <a href="#">CSS</a>
-                        </li>
-                        <li>
-                            <a href="#">JavaScript</a>
-                        </li>
-                        <li>
-                            <a href="#">Snippet</a>
-                        </li>
-                        <li>
-                            <a href="#">jQuery</a>
-                        </li>
+                        {% endfor %}
+
                     </ul>
                 </div>
-                <div class="rss">
-                    <a href=""><span class="ion-social-rss-outline"></span> RSS 订阅</a>
-                </div>
+
             </aside>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            var arr = $("h2");
+            arr.each(function () {
+                    $(".menu").append("<li>"+$(this).html()+"</li>")
+                }
+            )
+        });
+    </script>
 {% endblock %}
 
